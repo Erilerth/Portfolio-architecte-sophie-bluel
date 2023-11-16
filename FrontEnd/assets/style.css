@@ -133,14 +133,6 @@ a {
   text-decoration: none;
 }
 /** end reset css**/
-.hidden {
-  display: none;
-}
-
-.show {
-  display: block;
-}
-
 body {
   max-width: 1140px;
   margin: auto;
@@ -284,29 +276,4 @@ footer nav ul {
   display: flex;
   justify-content: flex-end;
   margin: 2em;
-}
-
-#filter {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  margin-bottom: 50px;
-  gap: 10px;
-}
-
-#filter li {
-  font-family: 'Syne';
-  font-weight: 700;
-  color: #1d6154;
-  text-align: center;
-  padding: 10px 15px;
-  box-sizing: border-box;
-  border: 1px solid #1d6154;
-  border-radius: 60px;
-  cursor: pointer;
-}
-
-#filter .filter-selected {
-  color: white;
-  background-color: #1d6154;
 }
