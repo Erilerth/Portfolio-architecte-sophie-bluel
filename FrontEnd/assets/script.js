@@ -2,6 +2,8 @@ const api = 'http://localhost:5678/api/';
 let apiDataWorks = [];
 let apiDataCategories = [];
 
+const cards = document.querySelector('.gallery');
+
 async function fetchData() {
   apiDataWorks = await fetchApi('works');
   apiDataCategories = await fetchApi('categories');
@@ -16,7 +18,6 @@ async function fetchApi(endPoint) {
 }
 
 function displayWorks(categoryId) {
-  const cards = document.querySelector('.gallery');
   cards.innerHTML = '';
 
   for (let i = 0; i < apiDataWorks.length; i++) {
@@ -77,8 +78,74 @@ function toggleFilterSelected(element) {
 
 async function init() {
   await fetchData();
-  displayWorks();
-  displayButtons();
+  if (cards) {
+    displayWorks();
+    displayButtons();
+  }
 }
 
 init();
+
+class login {
+  constructor(form, fields) {
+    this.form = form;
+    this.fields = fields;
+    this.validateOnSubmit();
+  }
+
+  validateOnSubmit() {
+    let self = this;
+
+    this.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      var error = 0;
+
+      self.fields.forEach((field) => {
+        const input = document.querySelector(`#${field}`);
+        if (self.validateFields(input) == false) {
+          error++;
+        }
+      });
+      if (error == 0) {
+        localStorage.setItem('auth', 1);
+        this.form.submit();
+      }
+    });
+  }
+
+  validateFields(field) {
+    if (field.value.trim() == '') {
+      this.setStatus(
+        field,
+        `${field.previousElementSibling.innerText} ne peut pas être vide`,
+        'error'
+      );
+      return false;
+    } else {
+      this.setStatus(field, null, 'success');
+      return true;
+    }
+  }
+
+  setStatus(field, message, status) {
+    const errorMessage = field.nextElementSibling;
+
+    if (status == 'success') {
+      if (errorMessage) {
+        errorMessage.innerText = '';
+      }
+
+      field.classList.remove('input-error');
+    }
+    if (status === 'error') {
+      errorMessage.innerText = message;
+      field.classList.add('input-error');
+    }
+  }
+}
+
+const form = document.querySelector('.login_form');
+if (form) {
+  const fields = ['E-mail', 'password'];
+  const validator = new login(form, fields);
+}

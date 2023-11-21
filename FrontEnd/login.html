@@ -32,12 +32,14 @@
     <main>
       <section id="contact" class="login-margin">
         <h2>Log In</h2>
-        <form action="">
+        <form class="login_form">
           <label for="E-mail">E-mail</label>
-          <input type="text" name="E-mail" id="E-mail" />
-          <label for="Mot_de_passe">Mot de passe</label>
-          <input type="Mot_de_passe" name="Mot_de_passe" id="Mot_de_passe" />
-          <input type="submit" value="Se connecter" />
+          <input type="email" name="E-mail" id="E-mail" />
+          <span class="error-message"></span>
+          <label for="password">Mot de passe</label>
+          <input type="password" name="password" id="password" />
+          <span class="error-message"></span>
+          <input type="submit" value="Se connecter" class="btn" />
           <a href="#">Mot de passe oublié</a>
         </form>
       </section>
@@ -50,5 +52,6 @@
         </ul>
       </nav>
     </footer>
+    <script src="assets/script.js"></script>
   </body>
 </html>
