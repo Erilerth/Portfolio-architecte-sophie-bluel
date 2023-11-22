@@ -7,6 +7,14 @@ const cards = document.querySelector('.gallery');
 async function fetchData() {
   apiDataWorks = await fetchApi('works');
   apiDataCategories = await fetchApi('categories');
+
+  /*   Working ????
+  apiDataLogin = await fetch(api + 'users/login', {
+    method: 'POST',
+    body: JSON.stringify(user),
+    headers: { 'Content-type': 'application/json' },
+  }); 
+  */
 }
 
 async function fetchApi(endPoint) {
@@ -107,8 +115,34 @@ class login {
         }
       });
       if (error == 0) {
-        localStorage.setItem('auth', 1);
-        this.form.submit();
+        const user = {
+          email: document.querySelector('#E-mail').value,
+          password: document.querySelector('#password').value,
+        };
+
+        fetch(api + 'users/login', {
+          method: 'POST',
+          body: JSON.stringify(user),
+          headers: { 'Content-type': 'application/json' },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) {
+              console.error('Error:', data.message);
+              document.querySelector('.error-message-all').style.display =
+                'block';
+              document.querySelector('.error-message-all').innerText =
+                'Votre E-mail ou votre Mot de passe est incorrect';
+            } else {
+              localStorage.setItem('user', JSON.stringify(data));
+              localStorage.setItem('auth', 1);
+              this.form.submit();
+            }
+            // console.log(data);
+          })
+          .catch((data) => {
+            console.error('error:', data.message);
+          });
       }
     });
   }
