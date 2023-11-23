@@ -5,24 +5,29 @@ let apiDataCategories = [];
 const cards = document.querySelector('.gallery');
 
 async function fetchData() {
-  apiDataWorks = await fetchApi('works');
-  apiDataCategories = await fetchApi('categories');
-
-  /*   Working ????
-  apiDataLogin = await fetch(api + 'users/login', {
-    method: 'POST',
-    body: JSON.stringify(user),
-    headers: { 'Content-type': 'application/json' },
-  }); 
-  */
+  apiDataWorks = await handleApiRequest('works');
+  apiDataCategories = await handleApiRequest('categories');
 }
 
-async function fetchApi(endPoint) {
-  const endPointName = endPoint;
-  const res = await fetch(api + endPointName);
-  const data = await res.json();
-
-  return data;
+async function handleApiRequest(
+  endPoint,
+  method = 'GET',
+  headers = {},
+  body = null,
+  errorMessage = 'Une erreur est survenue'
+) {
+  try {
+    const res = await fetch(`${api}${endPoint}`, {
+      method,
+      headers,
+      body: !body ? null : JSON.stringify(body),
+    });
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+    document.querySelector('#error').innerText = errorMessage;
+  }
 }
 
 function displayWorks(categoryId) {
@@ -94,29 +99,33 @@ async function init() {
 
 init();
 
-function validateOnSubmit(form, fields) {
-  this.form.addEventListener('submit', (e) => {
+const form = document.querySelector('.login_form');
+if (form) {
+  const fields = ['E-mail', 'password'];
+
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
     let error = 0;
 
     fields.forEach((field) => {
       const input = document.querySelector(`#${field}`);
-      if (validateFields(input) == false) {
+      if (validateFields(input) === false) {
         error++;
       }
     });
-    if (error == 0) {
+
+    if (error === 0) {
       const user = {
         email: document.querySelector('#E-mail').value,
         password: document.querySelector('#password').value,
       };
 
-      fetch(api + 'users/login', {
-        method: 'POST',
-        body: JSON.stringify(user),
-        headers: { 'Content-type': 'application/json' },
-      })
-        .then((response) => response.json())
+      handleApiRequest(
+        'users/login',
+        'POST',
+        { 'Content-type': 'application/json' },
+        user
+      )
         .then((data) => {
           if (data.error) {
             console.error('Error:', data.message);
@@ -127,59 +136,42 @@ function validateOnSubmit(form, fields) {
           } else {
             localStorage.setItem('user', JSON.stringify(data));
             localStorage.setItem('auth', 1);
-            this.form.submit();
+            form.submit();
           }
-          // console.log(data);
         })
         .catch((data) => {
           console.error('error:', data.message);
         });
     }
   });
-}
 
-function validateFields(field) {
-  if (field.value.trim() == '') {
-    this.setStatus(
-      field,
-      `${field.previousElementSibling.innerText} ne peut pas être vide`,
-      'error'
-    );
-    return false;
-  } else {
-    this.setStatus(field, null, 'success');
-    return true;
-  }
-}
-
-function setStatus(field, message, status) {
-  const errorMessage = field.nextElementSibling;
-
-  if (status == 'success') {
-    if (errorMessage) {
-      errorMessage.innerText = '';
+  function validateFields(field) {
+    if (field.value.trim() === '') {
+      setStatus(
+        field,
+        `${field.previousElementSibling.innerText} ne peut pas être vide`,
+        'error'
+      );
+      return false;
+    } else {
+      setStatus(field, null, 'success');
+      return true;
     }
-
-    field.classList.remove('input-error');
   }
-  if (status === 'error') {
-    errorMessage.innerText = message;
-    field.classList.add('input-error');
+
+  function setStatus(field, message, status) {
+    const errorMessage = field.nextElementSibling;
+
+    if (status === 'success') {
+      if (errorMessage) {
+        errorMessage.innerText = '';
+      }
+
+      field.classList.remove('input-error');
+    }
+    if (status === 'error') {
+      errorMessage.innerText = message;
+      field.classList.add('input-error');
+    }
   }
-}
-
-const form = document.querySelector('.login_form');
-if (form) {
-  const fields = ['E-mail', 'password'];
-  const validator = new login(form, fields);
-}
-
-const auth = localStorage.getItem('auth');
-const user = JSON.parse(localStorage.getItem('user'));
-
-function validateAuth(auth, user) {}
-
-function logout() {
-  localStorage.removeItem('auth');
-  localStorage.removeItem('user');
 }
