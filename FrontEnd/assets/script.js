@@ -52,7 +52,7 @@ function displayWorks(categoryId) {
 }
 
 function displayButtons() {
-  const filterButtons = document.querySelector('#filter');
+  const filterButton = document.querySelector('#filter');
 
   const allCategory = document.createElement('li');
   allCategory.innerText = 'Tous';
@@ -61,7 +61,7 @@ function displayButtons() {
     toggleFilterSelected(allCategory);
   });
 
-  filterButtons.appendChild(allCategory).classList.add('filter-selected');
+  filterButton.appendChild(allCategory).classList.add('filter-selected');
 
   for (let i = 0; i < apiDataCategories.length; i++) {
     const categoryId = apiDataCategories[i].id;
@@ -74,7 +74,7 @@ function displayButtons() {
       toggleFilterSelected(nameCategory);
     });
 
-    filterButtons.appendChild(nameCategory);
+    filterButton.appendChild(nameCategory);
   }
 }
 
@@ -94,87 +94,77 @@ async function init() {
 
 init();
 
-class login {
-  constructor(form, fields) {
-    this.form = form;
-    this.fields = fields;
-    this.validateOnSubmit();
-  }
+function validateOnSubmit(form, fields) {
+  this.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let error = 0;
 
-  validateOnSubmit() {
-    let self = this;
-
-    this.form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      var error = 0;
-
-      self.fields.forEach((field) => {
-        const input = document.querySelector(`#${field}`);
-        if (self.validateFields(input) == false) {
-          error++;
-        }
-      });
-      if (error == 0) {
-        const user = {
-          email: document.querySelector('#E-mail').value,
-          password: document.querySelector('#password').value,
-        };
-
-        fetch(api + 'users/login', {
-          method: 'POST',
-          body: JSON.stringify(user),
-          headers: { 'Content-type': 'application/json' },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.error) {
-              console.error('Error:', data.message);
-              document.querySelector('.error-message-all').style.display =
-                'block';
-              document.querySelector('.error-message-all').innerText =
-                'Votre E-mail ou votre Mot de passe est incorrect';
-            } else {
-              localStorage.setItem('user', JSON.stringify(data));
-              localStorage.setItem('auth', 1);
-              this.form.submit();
-            }
-            // console.log(data);
-          })
-          .catch((data) => {
-            console.error('error:', data.message);
-          });
+    fields.forEach((field) => {
+      const input = document.querySelector(`#${field}`);
+      if (validateFields(input) == false) {
+        error++;
       }
     });
+    if (error == 0) {
+      const user = {
+        email: document.querySelector('#E-mail').value,
+        password: document.querySelector('#password').value,
+      };
+
+      fetch(api + 'users/login', {
+        method: 'POST',
+        body: JSON.stringify(user),
+        headers: { 'Content-type': 'application/json' },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.error) {
+            console.error('Error:', data.message);
+            document.querySelector('.error-message-all').style.display =
+              'block';
+            document.querySelector('.error-message-all').innerText =
+              'Votre E-mail ou votre Mot de passe est incorrect';
+          } else {
+            localStorage.setItem('user', JSON.stringify(data));
+            localStorage.setItem('auth', 1);
+            this.form.submit();
+          }
+          // console.log(data);
+        })
+        .catch((data) => {
+          console.error('error:', data.message);
+        });
+    }
+  });
+}
+
+function validateFields(field) {
+  if (field.value.trim() == '') {
+    this.setStatus(
+      field,
+      `${field.previousElementSibling.innerText} ne peut pas être vide`,
+      'error'
+    );
+    return false;
+  } else {
+    this.setStatus(field, null, 'success');
+    return true;
   }
+}
 
-  validateFields(field) {
-    if (field.value.trim() == '') {
-      this.setStatus(
-        field,
-        `${field.previousElementSibling.innerText} ne peut pas être vide`,
-        'error'
-      );
-      return false;
-    } else {
-      this.setStatus(field, null, 'success');
-      return true;
+function setStatus(field, message, status) {
+  const errorMessage = field.nextElementSibling;
+
+  if (status == 'success') {
+    if (errorMessage) {
+      errorMessage.innerText = '';
     }
+
+    field.classList.remove('input-error');
   }
-
-  setStatus(field, message, status) {
-    const errorMessage = field.nextElementSibling;
-
-    if (status == 'success') {
-      if (errorMessage) {
-        errorMessage.innerText = '';
-      }
-
-      field.classList.remove('input-error');
-    }
-    if (status === 'error') {
-      errorMessage.innerText = message;
-      field.classList.add('input-error');
-    }
+  if (status === 'error') {
+    errorMessage.innerText = message;
+    field.classList.add('input-error');
   }
 }
 
@@ -182,4 +172,14 @@ const form = document.querySelector('.login_form');
 if (form) {
   const fields = ['E-mail', 'password'];
   const validator = new login(form, fields);
+}
+
+const auth = localStorage.getItem('auth');
+const user = JSON.parse(localStorage.getItem('user'));
+
+function validateAuth(auth, user) {}
+
+function logout() {
+  localStorage.removeItem('auth');
+  localStorage.removeItem('user');
 }
