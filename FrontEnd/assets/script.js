@@ -30,6 +30,23 @@ async function handleApiRequest(
   }
 }
 
+function createGenericElement(
+  elt = 'div',
+  className = '',
+  text = '',
+  id = '',
+  attribute = []
+) {
+  const elem = document.createElement(elt);
+  if (className !== '') elem.className = className;
+  if (text !== '') elem.innerText = text;
+  if (id !== '') elem.id = id;
+  attribute.forEach((attribute) => {
+    elem.setAttribute(attribute.name, attribute.value);
+  });
+  return elem;
+}
+
 function displayWorks(categoryId) {
   cards.innerHTML = '';
 
@@ -40,13 +57,12 @@ function displayWorks(categoryId) {
       const titleWork = currentWork.title;
       const imgWork = currentWork.imageUrl;
 
-      const workDisplay = document.createElement('figure');
-      const workImg = document.createElement('img');
-      const workTitle = document.createElement('figcaption');
-
-      workImg.src = imgWork;
-      workImg.alt = titleWork;
-      workTitle.textContent = titleWork;
+      const workDisplay = createGenericElement('figure', '');
+      const workImg = createGenericElement('img', '', '', '', [
+        { name: 'src', value: imgWork },
+        { name: 'alt', value: titleWork },
+      ]);
+      const workTitle = createGenericElement('figcaption', '', titleWork);
 
       workDisplay.appendChild(workImg);
       workDisplay.appendChild(workTitle);
