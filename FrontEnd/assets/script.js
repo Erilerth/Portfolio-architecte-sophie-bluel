@@ -110,8 +110,12 @@ function toggleFilterSelected(element) {
 async function init() {
   await fetchData();
   if (cards) {
-    displayWorks();
-    displayButtons();
+    if (auth === '1') {
+      displayWorks();
+    } else {
+      displayWorks();
+      displayButtons();
+    }
   }
 }
 
@@ -205,4 +209,16 @@ if (auth === '1') {
     localStorage.removeItem('user');
     localStorage.removeItem('auth');
   });
+
+  const header = document.querySelector('body');
+  const projet = document.querySelector('#portfolio h2');
+  const editionText = `<i class="fa-regular fa-pen-to-square"></i> Mode édition`;
+
+  const headerEdition = createGenericElement('div', 'header_edition');
+  const headerEditionText = createGenericElement('p');
+
+  headerEditionText.innerHTML = editionText;
+
+  header.insertBefore(headerEdition, header.firstChild);
+  headerEdition.appendChild(headerEditionText);
 }
