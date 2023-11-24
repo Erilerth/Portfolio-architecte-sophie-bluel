@@ -193,3 +193,16 @@ if (form) {
     }
   }
 }
+
+const logButton = document.querySelector('#login_logout');
+const auth = localStorage.getItem('auth');
+
+if (auth === '1') {
+  logButton.innerText = 'logout';
+  logButton.parentElement.href = 'index.html';
+
+  logButton.addEventListener('click', () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('auth');
+  });
+}
