@@ -47,28 +47,30 @@ function createGenericElement(
   return elem;
 }
 
+function createCard(currentWork, categoryId) {
+  if (!categoryId || currentWork.categoryId === categoryId) {
+    const titleWork = currentWork.title;
+    const imgWork = currentWork.imageUrl;
+
+    const workDisplay = createGenericElement('figure', '');
+    const workImg = createGenericElement('img', '', '', '', [
+      { name: 'src', value: imgWork },
+      { name: 'alt', value: titleWork },
+    ]);
+    const workTitle = createGenericElement('figcaption', '', titleWork);
+
+    workDisplay.appendChild(workImg);
+    workDisplay.appendChild(workTitle);
+
+    cards.appendChild(workDisplay);
+  }
+}
+
 function displayWorks(categoryId) {
   cards.innerHTML = '';
 
   for (let i = 0; i < apiDataWorks.length; i++) {
-    const currentWork = apiDataWorks[i];
-
-    if (!categoryId || currentWork.categoryId === categoryId) {
-      const titleWork = currentWork.title;
-      const imgWork = currentWork.imageUrl;
-
-      const workDisplay = createGenericElement('figure', '');
-      const workImg = createGenericElement('img', '', '', '', [
-        { name: 'src', value: imgWork },
-        { name: 'alt', value: titleWork },
-      ]);
-      const workTitle = createGenericElement('figcaption', '', titleWork);
-
-      workDisplay.appendChild(workImg);
-      workDisplay.appendChild(workTitle);
-
-      cards.appendChild(workDisplay);
-    }
+    createCard(apiDataWorks[i], categoryId);
   }
 }
 
