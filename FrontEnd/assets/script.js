@@ -2,7 +2,8 @@ const api = 'http://localhost:5678/api/';
 let apiDataWorks = [];
 let apiDataCategories = [];
 
-const cards = document.querySelector('.gallery');
+const portfolioGallery = document.querySelector('#portfolio .gallery');
+const modalImg = document.querySelector('#modale_img');
 
 async function fetchData() {
   apiDataWorks = await handleApiRequest('works');
@@ -47,7 +48,7 @@ function createGenericElement(
   return elem;
 }
 
-function createCard(currentWork, categoryId) {
+function createCard(currentWork, categoryId, gallery) {
   if (!categoryId || currentWork.categoryId === categoryId) {
     const titleWork = currentWork.title;
     const imgWork = currentWork.imageUrl;
@@ -62,15 +63,15 @@ function createCard(currentWork, categoryId) {
     workDisplay.appendChild(workImg);
     workDisplay.appendChild(workTitle);
 
-    cards.appendChild(workDisplay);
+    gallery.appendChild(workDisplay);
   }
 }
 
-function displayWorks(categoryId) {
-  cards.innerHTML = '';
+function displayWorks(categoryId, gallery) {
+  gallery.innerHTML = '';
 
   for (let i = 0; i < apiDataWorks.length; i++) {
-    createCard(apiDataWorks[i], categoryId);
+    createCard(apiDataWorks[i], categoryId, gallery);
   }
 }
 
@@ -80,7 +81,7 @@ function displayButtons() {
   const allCategory = document.createElement('li');
   allCategory.innerText = 'Tous';
   allCategory.addEventListener('click', () => {
-    displayWorks();
+    displayWorks(null, portfolioGallery);
     toggleFilterSelected(allCategory);
   });
 
@@ -93,7 +94,7 @@ function displayButtons() {
     const nameCategory = document.createElement('li');
     nameCategory.innerText = categoryName;
     nameCategory.addEventListener('click', () => {
-      displayWorks(categoryId);
+      displayWorks(categoryId, portfolioGallery);
       toggleFilterSelected(nameCategory);
     });
 
@@ -109,11 +110,12 @@ function toggleFilterSelected(element) {
 
 async function init() {
   await fetchData();
-  if (cards) {
-    if (auth === '1') {
-      displayWorks();
-    } else {
-      displayWorks();
+  if (modalImg) {
+    displayWorks(null, modalImg.querySelector('.gallery'));
+  }
+  if (portfolioGallery) {
+    displayWorks(null, portfolioGallery);
+    if (auth !== '1') {
       displayButtons();
     }
   }
@@ -202,6 +204,12 @@ const logButton = document.querySelector('#login_logout');
 const auth = localStorage.getItem('auth');
 
 if (auth === '1') {
+  logout();
+  addEditModeElements();
+  modalToggle();
+}
+
+function logout() {
   logButton.innerText = 'logout';
   logButton.parentElement.href = 'index.html';
 
@@ -209,16 +217,37 @@ if (auth === '1') {
     localStorage.removeItem('user');
     localStorage.removeItem('auth');
   });
+}
 
+function addEditModeElements() {
   const header = document.querySelector('body');
   const projet = document.querySelector('#portfolio h2');
-  const editionText = `<i class="fa-regular fa-pen-to-square"></i> Mode édition`;
 
   const headerEdition = createGenericElement('div', 'header_edition');
   const headerEditionText = createGenericElement('p');
+  const projetEdition = createGenericElement('span', '', '', 'modifier');
 
-  headerEditionText.innerHTML = editionText;
+  headerEditionText.innerHTML = `<i class="fa-regular fa-pen-to-square"></i> Mode édition`;
+  projetEdition.innerHTML = `<i class="fa-regular fa-pen-to-square"></i> modifier`;
 
   header.insertBefore(headerEdition, header.firstChild);
   headerEdition.appendChild(headerEditionText);
+  projet.appendChild(projetEdition);
+}
+
+function modalToggle() {
+  const modal = document.querySelector('#overlay');
+  const modifierBtn = document.querySelector('#modifier');
+  const modalCross = document.querySelector('#modal_cross');
+
+  document.addEventListener('click', function (event) {
+    if (
+      event.target === modal ||
+      event.target === modifierBtn ||
+      event.target === modalCross
+    ) {
+      modal.classList.toggle('hide');
+    }
+    console.log(event);
+  });
 }
