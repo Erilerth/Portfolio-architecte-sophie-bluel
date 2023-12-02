@@ -140,8 +140,8 @@ body {
   font-size: 14px;
 }
 
-body .hide {
-  display: none;
+.hide {
+  display: none !important;
 }
 
 header {
@@ -301,6 +301,7 @@ input[type='submit'] {
   width: 180px;
   text-align: center;
   border-radius: 60px;
+  border: none;
 }
 
 footer nav ul {
@@ -338,6 +339,7 @@ footer nav ul {
   color: #000;
   margin-top: 10px;
   margin-bottom: 45px;
+  font-weight: 400;
 }
 
 #modale_img .gallery {
@@ -371,9 +373,12 @@ footer nav ul {
   justify-self: center;
 }
 
-.cross {
+.cross,
+.return_arrow {
   align-self: flex-end;
-  margin-right: 30px;
+  cursor: pointer;
+  margin: 0 30px;
+  font-size: 20px;
 }
 
 .modale {
@@ -402,6 +407,93 @@ footer nav ul {
   cursor: pointer;
 }
 
-#modal_cross {
+#modal_img_upload {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  background-color: white;
+  width: 630px;
+  border-radius: 10px;
+}
+
+.return_close {
+  display: flex;
+  align-self: stretch;
+  justify-content: space-between;
+  margin-top: 35px;
+}
+
+#modal_img_upload h3 {
+  color: #000;
+  font-family: Work Sans;
+  font-size: 26px;
+  margin-top: 10px;
+  margin-bottom: 35px;
+}
+
+#img_upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 420px;
+  background-color: #e8f1f6;
+  padding: 19px 0;
+}
+
+#img_upload i {
+  color: #b9c5cc;
+  font-size: 76px;
+}
+
+#img_upload input {
+  background-color: #b9c5cc;
   cursor: pointer;
+  color: #306685;
+  padding: 10px 33px;
+  border-radius: 30px;
+  font-family: Work Sans;
+  font-size: 14px;
+  border: none;
+}
+
+#img_upload p {
+  color: #444;
+  font-family: Work Sans;
+  font-size: 10px;
+}
+
+#modal_img_upload form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  padding-bottom: 45px;
+  border-bottom: #b3b3b3 1px solid;
+  width: 420px;
+}
+
+#modal_img_upload form label {
+  margin-bottom: 10px;
+}
+
+#modal_img_upload form input {
+  margin-bottom: 20px;
+  height: 50px;
+  border: none;
+  box-shadow: 0px 4px 14px 0px rgba(0, 0, 0, 0.09);
+}
+
+#modal_img_upload form select {
+  border: none;
+  background-color: white;
+  box-shadow: 0px 4px 14px 0px rgba(0, 0, 0, 0.09);
+  height: 50px;
+}
+
+#modal_img_upload .greyed-out_input {
+  background-color: #a7a7a7;
+}
+
+.validate_input {
+  padding: 10px 50px;
 }

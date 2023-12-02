@@ -31,10 +31,34 @@
     <main>
       <div id="overlay" class="hide">
         <section id="modale_img" class="flex_container_modale modale">
-          <i class="fa-solid fa-xmark cross" id="modal_cross"></i>
+          <i class="fa-solid fa-xmark cross"></i>
           <h2>Galerie photo</h2>
           <div class="gallery"></div>
           <input type="submit" value="Ajouter une photo" class="btn" />
+        </section>
+        <section id="modal_img_upload" class="modale hide">
+          <div class="return_close">
+            <i class="fa-solid fa-arrow-left return_arrow"></i>
+            <i class="fa-solid fa-xmark cross"></i>
+          </div>
+          <h3>Ajout photo</h3>
+          <div id="img_upload">
+            <i class="fa-regular fa-image"></i>
+            <input type="button" value="+ Ajouter photo" />
+            <p>jpg, png : 4mo max</p>
+          </div>
+          <form action="#">
+            <label for="title">Titre</label>
+            <input type="text" name="title" id="title" />
+            <label for="categories">Catégorie</label>
+            <select name="filters" id="filters">
+              <option value="test"></option>
+            </select>
+          </form>
+          <input
+            type="submit"
+            value="Valider"
+            class="greyed-out_input validate_input" />
         </section>
       </div>
       <section id="introduction">

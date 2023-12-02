@@ -3,7 +3,6 @@ let apiDataWorks = [];
 let apiDataCategories = [];
 
 const portfolioGallery = document.querySelector('#portfolio .gallery');
-const modalImg = document.querySelector('#modale_img');
 
 async function fetchData() {
   apiDataWorks = await handleApiRequest('works');
@@ -36,13 +35,13 @@ function createGenericElement(
   className = '',
   text = '',
   id = '',
-  attribute = []
+  attributes = []
 ) {
   const elem = document.createElement(elt);
   if (className !== '') elem.className = className;
   if (text !== '') elem.innerText = text;
   if (id !== '') elem.id = id;
-  attribute.forEach((attribute) => {
+  attributes.forEach((attribute) => {
     elem.setAttribute(attribute.name, attribute.value);
   });
   return elem;
@@ -110,15 +109,19 @@ function toggleFilterSelected(element) {
 
 async function init() {
   await fetchData();
-  if (modalImg) {
-    displayWorks(null, modalImg.querySelector('.gallery'));
-  }
-  if (portfolioGallery) {
-    displayWorks(null, portfolioGallery);
-    if (auth !== '1') {
-      displayButtons();
-    }
-  }
+  const user = JSON.parse(localStorage.getItem('user'));
+  // await handleApiRequest(
+  //   'works',
+  //   'POST',
+  //   {
+  //     Authorization: `Bearer ${user.token}`,
+  //   },
+  //   {}
+  // );
+  if (!portfolioGallery) return;
+  displayWorks(null, portfolioGallery);
+  if (isAuth) return;
+  displayButtons();
 }
 
 init();
@@ -133,7 +136,7 @@ if (form) {
 
     fields.forEach((field) => {
       const input = document.querySelector(`#${field}`);
-      if (validateFields(input) === false) {
+      if (!validateFields(input)) {
         error++;
       }
     });
@@ -185,25 +188,16 @@ if (form) {
 
   function setStatus(field, message, status) {
     const errorMessage = field.nextElementSibling;
-
-    if (status === 'success') {
-      if (errorMessage) {
-        errorMessage.innerText = '';
-      }
-
-      field.classList.remove('input-error');
-    }
-    if (status === 'error') {
-      errorMessage.innerText = message;
-      field.classList.add('input-error');
-    }
+    errorMessage.innerText = status === 'success' ? '' : message;
+    field.classList.toggle('input-error');
   }
 }
 
 const logButton = document.querySelector('#login_logout');
 const auth = localStorage.getItem('auth');
+const isAuth = auth === '1';
 
-if (auth === '1') {
+if (isAuth) {
   logout();
   addEditModeElements();
   modalToggle();
@@ -237,17 +231,33 @@ function addEditModeElements() {
 
 function modalToggle() {
   const modal = document.querySelector('#overlay');
+  const modalImg = document.querySelector('#modale_img');
   const modifierBtn = document.querySelector('#modifier');
-  const modalCross = document.querySelector('#modal_cross');
+  const modalCrosses = document.querySelectorAll('.cross');
+  const returnArrow = document.querySelector('.return_arrow');
+  const addImg = document.querySelector('#modale_img input');
+  const modalImgUpload = document.querySelector('#modal_img_upload');
 
-  document.addEventListener('click', function (event) {
+  document.addEventListener('click', (event) => {
     if (
       event.target === modal ||
       event.target === modifierBtn ||
-      event.target === modalCross
+      Array.from(modalCrosses).includes(event.target)
     ) {
       modal.classList.toggle('hide');
+      modalImg.classList.remove('hide');
+      modalImgUpload.classList.add('hide');
+
+      if (modalImg) {
+        displayWorks(null, modalImg.querySelector('.gallery'));
+      }
     }
-    console.log(event);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (event.target === addImg || event.target === returnArrow) {
+      modalImg.classList.toggle('hide');
+      modalImgUpload.classList.toggle('hide');
+    }
   });
 }
