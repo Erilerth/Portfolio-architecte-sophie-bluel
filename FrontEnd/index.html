@@ -43,22 +43,25 @@
           </div>
           <h3>Ajout photo</h3>
           <div id="img_upload">
+            <img id="uploadedImage" alt="Uploaded Image" />
             <i class="fa-regular fa-image"></i>
-            <input type="button" value="+ Ajouter photo" />
+            <input type="file" id="imageInput" accept="image/*" class="hide" />
+            <input
+              type="button"
+              value="+ Ajouter photo"
+              onclick="document.getElementById('imageInput').click();" />
             <p>jpg, png : 4mo max</p>
           </div>
-          <form action="#">
+          <form id="img_upload_form">
             <label for="title">Titre</label>
             <input type="text" name="title" id="title" />
             <label for="categories">Catégorie</label>
-            <select name="filters" id="filters">
-              <option value="test"></option>
-            </select>
+            <select name="filters" id="filters"></select>
+            <input
+              type="submit"
+              value="Valider"
+              class="greyed-out_input validate_input" />
           </form>
-          <input
-            type="submit"
-            value="Valider"
-            class="greyed-out_input validate_input" />
         </section>
       </div>
       <section id="introduction">

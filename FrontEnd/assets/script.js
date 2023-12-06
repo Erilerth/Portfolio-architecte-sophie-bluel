@@ -9,6 +9,16 @@ async function fetchData() {
   apiDataCategories = await handleApiRequest('categories');
 }
 
+/**
+ * Handles an API request.
+ *
+ * @param {string} endPoint - The API endpoint.
+ * @param {string} [method='GET'] - The HTTP method.
+ * @param {Object} [headers={}] - The request headers.
+ * @param {Object|null} [body=null] - The request body.
+ * @param {string} [errorMessage='Une erreur est survenue'] - The error message to display.
+ * @returns {Promise<Object>} - The response data.
+ */
 async function handleApiRequest(
   endPoint,
   method = 'GET',
@@ -20,7 +30,8 @@ async function handleApiRequest(
     const res = await fetch(`${api}${endPoint}`, {
       method,
       headers,
-      body: !body ? null : JSON.stringify(body),
+      body:
+        body instanceof FormData ? body : !body ? null : JSON.stringify(body),
     });
     const data = await res.json();
     return data;
@@ -30,6 +41,16 @@ async function handleApiRequest(
   }
 }
 
+/**
+ * Creates a generic HTML element with optional attributes.
+ *
+ * @param {string} [elt='div'] - The type of element to create (default: 'div').
+ * @param {string} [className=''] - The class name to assign to the element.
+ * @param {string} [text=''] - The text content of the element.
+ * @param {string} [id=''] - The ID to assign to the element.
+ * @param {Array<Object>} [attributes=[]] - An array of attribute objects to set on the element.
+ * @returns {HTMLElement} The created HTML element.
+ */
 function createGenericElement(
   elt = 'div',
   className = '',
@@ -47,7 +68,15 @@ function createGenericElement(
   return elem;
 }
 
-function createCard(currentWork, categoryId, gallery) {
+/**
+ * Creates a card element for a given work item.
+ *
+ * @param {Object} currentWork - The current work item.
+ * @param {string} categoryId - The category ID to filter the works.
+ * @param {HTMLElement} gallery - The gallery element to append the card to.
+ * @param {boolean} [isModal=false] - Indicates if the card is being created for a modal.
+ */
+function createCard(currentWork, categoryId, gallery, isModal = false) {
   if (!categoryId || currentWork.categoryId === categoryId) {
     const titleWork = currentWork.title;
     const imgWork = currentWork.imageUrl;
@@ -62,15 +91,21 @@ function createCard(currentWork, categoryId, gallery) {
     workDisplay.appendChild(workImg);
     workDisplay.appendChild(workTitle);
 
+    // If the card is being created for the modal, add the trash can icon
+    if (isModal) {
+      const trashIcon = createGenericElement('i', 'fa-solid fa-trash-can');
+      workDisplay.appendChild(trashIcon);
+    }
+
     gallery.appendChild(workDisplay);
   }
 }
 
-function displayWorks(categoryId, gallery) {
+function displayWorks(categoryId, gallery, isModal = false) {
   gallery.innerHTML = '';
 
   for (let i = 0; i < apiDataWorks.length; i++) {
-    createCard(apiDataWorks[i], categoryId, gallery);
+    createCard(apiDataWorks[i], categoryId, gallery, isModal);
   }
 }
 
@@ -109,19 +144,13 @@ function toggleFilterSelected(element) {
 
 async function init() {
   await fetchData();
-  const user = JSON.parse(localStorage.getItem('user'));
-  // await handleApiRequest(
-  //   'works',
-  //   'POST',
-  //   {
-  //     Authorization: `Bearer ${user.token}`,
-  //   },
-  //   {}
-  // );
   if (!portfolioGallery) return;
   displayWorks(null, portfolioGallery);
-  if (isAuth) return;
-  displayButtons();
+  if (isAuth) {
+    addFilterOptions(apiDataCategories);
+  } else {
+    displayButtons();
+  }
 }
 
 init();
@@ -249,7 +278,7 @@ function modalToggle() {
       modalImgUpload.classList.add('hide');
 
       if (modalImg) {
-        displayWorks(null, modalImg.querySelector('.gallery'));
+        displayWorks(null, modalImg.querySelector('.gallery'), true);
       }
     }
   });
@@ -261,3 +290,145 @@ function modalToggle() {
     }
   });
 }
+
+function addFilterOptions(categories) {
+  const filtersSelect = document.getElementById('filters');
+
+  categories.forEach((category) => {
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.text = category.name;
+
+    filtersSelect.appendChild(option);
+  });
+}
+
+const imageInput = document.getElementById('imageInput');
+const imgUploadDiv = document.getElementById('img_upload');
+const uploadedImage = document.getElementById('uploadedImage');
+const imgUploadButton = document.querySelector(
+  '#img_upload input[type="button"]'
+);
+const imgUploadIcon = document.querySelector('#img_upload p');
+const imgUploadParagraph = document.querySelector('#img_upload p');
+const imgUploadForm = document.getElementById('imgUploadForm');
+
+imageInput.addEventListener('change', resetImageUploadInterface);
+document.querySelector('.return_close').addEventListener('click', closeModal);
+imageInput.addEventListener('change', handleImageUpload);
+
+function resetImageUploadInterface() {
+  closeModal();
+  handleImageUpload();
+}
+
+function closeModal() {
+  imgUploadDiv.style.backgroundImage = 'none';
+  uploadedImage.src = '';
+  uploadedImage.style.display = 'none';
+  imgUploadButton.style.display = 'inline-block';
+  imgUploadParagraph.style.display = 'block';
+  imgUploadForm.style.display = 'block';
+}
+
+function handleImageUpload() {
+  if (imageInput.files && imageInput.files[0]) {
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      uploadedImage.src = e.target.result;
+
+      uploadedImage.style.display = 'flex';
+      imageInput.style.display = 'none';
+      imgUploadButton.style.display = 'none';
+      imgUploadParagraph.style.display = 'none';
+      imgUploadForm.style.display = 'none';
+      imgUploadIcon.style.display = 'none';
+    };
+
+    reader.readAsDataURL(imageInput.files[0]);
+  }
+}
+
+const imageUploadForm = document.querySelector('#img_upload_form');
+imageUploadForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  uploadImg();
+});
+
+const user = JSON.parse(localStorage.getItem('user'));
+async function uploadImg() {
+  try {
+    const file = document.getElementById('imageInput').files[0];
+    const title = document.getElementById('title').value;
+    const categoryId = document.getElementById('filters').value;
+
+    if (!categoryId) {
+      alert('Veuillez choisir une catégorie');
+      return;
+    }
+
+    let formData = new FormData();
+    formData.append('image', file);
+    formData.append('title', title);
+    formData.append('categoryId', categoryId);
+
+    const response = await handleApiRequest(
+      'works',
+      'POST',
+      { Authorization: `Bearer ${user.token}` },
+      formData
+    );
+
+    switch (response.status) {
+      case 201:
+        console.log('Image uploaded successfully');
+        alert('Votre image a bien été ajoutée');
+        break;
+      case 400:
+        console.log('Bad request');
+        break;
+      case 401:
+        console.log('Unauthorized');
+        break;
+      default:
+        console.log('Unexpected error');
+    }
+
+    console.log(response.data);
+
+    await fetchData();
+    displayWorks(null, portfolioGallery);
+  } catch (error) {
+    alert(`Une erreur est survenue + ${error.message}`);
+    console.log(error);
+  }
+}
+
+async function deleteImg(imgId) {
+  const response = await handleApiRequest(`works/${imgId}`, 'DELETE', {
+    Authorization: `Bearer ${user.token}`,
+  });
+
+  switch (response.status) {
+    case 201:
+      console.log('Image supprimée avec succès');
+      break;
+    case 401:
+      console.log('Unauthorized');
+      break;
+    default:
+      console.log('Unexpected error');
+  }
+
+  await fetchData();
+  displayWorks(null, portfolioGallery);
+}
+
+const modalImg = document.querySelector('#modale_img');
+modalImg.addEventListener('click', (e) => {
+  if (e.target.classList.contains('fa-trash-can')) {
+    const imgId = e.target.parentElement.dataset.id;
+    deleteImg(imgId);
+  }
+});
