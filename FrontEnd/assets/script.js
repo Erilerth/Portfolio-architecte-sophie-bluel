@@ -24,14 +24,14 @@ async function handleApiRequest(
   method = 'GET',
   headers = {},
   body = null,
-  errorMessage = 'Une erreur est survenue'
+  errorMessage = 'Une erreur est survenue',
+  isBodyFormData = false
 ) {
   try {
     const res = await fetch(`${api}${endPoint}`, {
       method,
       headers,
-      body:
-        body instanceof FormData ? body : !body ? null : JSON.stringify(body),
+      body: isBodyFormData ? body : !body ? null : JSON.stringify(body),
     });
     const data = await res.json();
     return data;
@@ -72,7 +72,7 @@ function createGenericElement(
  * Creates a card element for a given work item.
  *
  * @param {Object} currentWork - The current work item.
- * @param {string} categoryId - The category ID to filter the works.
+ * @param {Number} categoryId - The category ID to filter the works.
  * @param {HTMLElement} gallery - The gallery element to append the card to.
  * @param {boolean} [isModal=false] - Indicates if the card is being created for a modal.
  */
@@ -94,6 +94,7 @@ function createCard(currentWork, categoryId, gallery, isModal = false) {
     // If the card is being created for the modal, add the trash can icon
     if (isModal) {
       const trashIcon = createGenericElement('i', 'fa-solid fa-trash-can');
+      workDisplay.dataset.id = currentWork.id;
       workDisplay.appendChild(trashIcon);
     }
 
@@ -350,11 +351,13 @@ function handleImageUpload() {
   }
 }
 
-const imageUploadForm = document.querySelector('#img_upload_form');
+const imageUploadForm = document.querySelector('form#img_upload_form');
 imageUploadForm.addEventListener('submit', (e) => {
   e.preventDefault();
   uploadImg();
 });
+
+console.log(imageUploadForm);
 
 const user = JSON.parse(localStorage.getItem('user'));
 async function uploadImg() {
@@ -366,18 +369,23 @@ async function uploadImg() {
     if (!categoryId) {
       alert('Veuillez choisir une catégorie');
       return;
+    } else if (!title) {
+      alert('Veuillez ajouter un titre');
+      return;
     }
 
     let formData = new FormData();
     formData.append('image', file);
     formData.append('title', title);
-    formData.append('categoryId', categoryId);
+    formData.append('category', parseInt(categoryId));
 
     const response = await handleApiRequest(
       'works',
       'POST',
       { Authorization: `Bearer ${user.token}` },
-      formData
+      formData,
+      "Une erreur est survenue lors de l'ajout de l'image",
+      true
     );
 
     switch (response.status) {
@@ -394,8 +402,6 @@ async function uploadImg() {
       default:
         console.log('Unexpected error');
     }
-
-    console.log(response.data);
 
     await fetchData();
     displayWorks(null, portfolioGallery);
@@ -428,7 +434,7 @@ async function deleteImg(imgId) {
 const modalImg = document.querySelector('#modale_img');
 modalImg.addEventListener('click', (e) => {
   if (e.target.classList.contains('fa-trash-can')) {
-    const imgId = e.target.parentElement.dataset.id;
+    const imgId = parseInt(e.target.parentElement.dataset.id);
     deleteImg(imgId);
   }
 });
