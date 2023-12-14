@@ -3,10 +3,14 @@ let apiDataWorks = [];
 let apiDataCategories = [];
 
 const portfolioGallery = document.querySelector('#portfolio .gallery');
+const modalGallery = document.querySelector('#modale_img .gallery');
+const modal = document.querySelector('#overlay');
 
 async function fetchData() {
-  apiDataWorks = await handleApiRequest('works');
-  apiDataCategories = await handleApiRequest('categories');
+  const apiDataWorksRes = await handleApiRequest('works');
+  const apiDataCategoriesRes = await handleApiRequest('categories');
+  apiDataWorks = apiDataWorksRes.data;
+  apiDataCategories = apiDataCategoriesRes.data;
 }
 
 /**
@@ -33,8 +37,10 @@ async function handleApiRequest(
       headers,
       body: isBodyFormData ? body : !body ? null : JSON.stringify(body),
     });
+    const status = res.status;
+    if (status === 204) return { data: null, status };
     const data = await res.json();
-    return data;
+    return { data, status };
   } catch (err) {
     console.error(err);
     document.querySelector('#error').innerText = errorMessage;
@@ -91,7 +97,6 @@ function createCard(currentWork, categoryId, gallery, isModal = false) {
     workDisplay.appendChild(workImg);
     workDisplay.appendChild(workTitle);
 
-    // If the card is being created for the modal, add the trash can icon
     if (isModal) {
       const trashIcon = createGenericElement('i', 'fa-solid fa-trash-can');
       workDisplay.dataset.id = currentWork.id;
@@ -260,7 +265,6 @@ function addEditModeElements() {
 }
 
 function modalToggle() {
-  const modal = document.querySelector('#overlay');
   const modalImg = document.querySelector('#modale_img');
   const modifierBtn = document.querySelector('#modifier');
   const modalCrosses = document.querySelectorAll('.cross');
@@ -315,15 +319,15 @@ const imgUploadParagraph = document.querySelector('#img_upload p');
 const imgUploadForm = document.getElementById('imgUploadForm');
 
 imageInput.addEventListener('change', resetImageUploadInterface);
-document.querySelector('.return_close').addEventListener('click', closeModal);
+document.querySelector('.return_close').addEventListener('click', resetModal);
 imageInput.addEventListener('change', handleImageUpload);
 
 function resetImageUploadInterface() {
-  closeModal();
+  resetModal();
   handleImageUpload();
 }
 
-function closeModal() {
+function resetModal() {
   imgUploadDiv.style.backgroundImage = 'none';
   uploadedImage.src = '';
   uploadedImage.style.display = 'none';
@@ -346,7 +350,6 @@ function handleImageUpload() {
       imgUploadForm.style.display = 'none';
       imgUploadIcon.style.display = 'none';
     };
-
     reader.readAsDataURL(imageInput.files[0]);
   }
 }
@@ -356,8 +359,6 @@ imageUploadForm.addEventListener('submit', (e) => {
   e.preventDefault();
   uploadImg();
 });
-
-console.log(imageUploadForm);
 
 const user = JSON.parse(localStorage.getItem('user'));
 async function uploadImg() {
@@ -390,25 +391,29 @@ async function uploadImg() {
 
     switch (response.status) {
       case 201:
-        console.log('Image uploaded successfully');
+        console.error('Image uploaded successfully');
         alert('Votre image a bien été ajoutée');
         break;
       case 400:
-        console.log('Bad request');
+        console.error('Bad request');
         break;
       case 401:
-        console.log('Unauthorized');
+        console.error('Unauthorized');
         break;
       default:
-        console.log('Unexpected error');
+        console.error('Unexpected error');
     }
 
     await fetchData();
+    displayWorks(null, modalGallery);
     displayWorks(null, portfolioGallery);
   } catch (error) {
     alert(`Une erreur est survenue + ${error.message}`);
     console.log(error);
   }
+
+  modal.classList.toggle('hide');
+  resetModal();
 }
 
 async function deleteImg(imgId) {
@@ -417,17 +422,18 @@ async function deleteImg(imgId) {
   });
 
   switch (response.status) {
-    case 201:
-      console.log('Image supprimée avec succès');
+    case 204:
+      console.error('Image supprimée avec succès');
       break;
     case 401:
-      console.log('Unauthorized');
+      console.error('Unauthorized');
       break;
     default:
-      console.log('Unexpected error');
+      console.error('Unexpected error');
   }
 
   await fetchData();
+  displayWorks(null, modalGallery);
   displayWorks(null, portfolioGallery);
 }
 
